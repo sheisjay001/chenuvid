@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChenuVid - AI Cartoon Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #6366f1;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="border-b border-gray-800 bg-gray-900/50 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-video text-indigo-500 text-2xl"></i>
+                    <span class="text-2xl font-bold gradient-text">ChenuVid</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-gray-300 hover:text-white transition">Gallery</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition">Pricing</a>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">Login</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-12 flex flex-col items-center justify-center">
+        
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h1 class="text-5xl font-extrabold mb-6">Turn your stories into <span class="gradient-text">Cartoons</span></h1>
+            <p class="text-gray-400 text-xl mb-8">Describe your scene, characters, and style. Our AI will bring it to life in seconds.</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="w-full max-w-2xl bg-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-700">
+            <form id="generateForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Story Description</label>
+                    <textarea 
+                        id="prompt" 
+                        rows="4" 
+                        class="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition"
+                        placeholder="A funny cat trying to catch a laser pointer in a futuristic kitchen..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Art Style</label>
+                        <select id="style" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="3d_cartoon">3D Cartoon (Pixar Style)</option>
+                            <option value="2d_anime">2D Anime</option>
+                            <option value="comic">Comic Book</option>
+                            <option value="claymation">Claymation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Duration</label>
+                        <select id="duration" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="10">10 Seconds</option>
+                            <option value="30">30 Seconds</option>
+                            <option value="180">3 Minutes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-xl shadow-lg transform transition hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                    <i class="fas fa-magic"></i> Generate Video
+                </button>
+            </form>
+        </div>
+
+        <!-- Result Section (Hidden by default) -->
+        <div id="resultSection" class="hidden w-full max-w-2xl mt-12 animate-fade-in">
+            <div class="bg-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-700">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-film text-indigo-500"></i> Generated Result
+                </h3>
+                
+                <div id="loadingState" class="hidden flex flex-col items-center justify-center py-12">
+                    <div class="loading-spinner mb-4"></div>
+                    <p class="text-gray-400 animate-pulse">Generating characters and animating scenes...</p>
+                    <div class="w-full max-w-md bg-gray-700 rounded-full h-2 mt-4">
+                        <div id="progressBar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p id="statusText" class="text-xs text-gray-500 mt-2">Initializing...</p>
+                </div>
+
+                <div id="videoContainer" class="hidden">
+                    <video id="generatedVideo" controls class="w-full rounded-xl shadow-lg mb-4 bg-black">
+                        <!-- Source will be added via JS -->
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="flex gap-4">
+                        <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg transition"><i class="fas fa-download mr-2"></i> Download</button>
+                        <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg transition"><i class="fas fa-share-alt mr-2"></i> Share</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-900 border-t border-gray-800 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-500">
+            <p>&copy; 2025 ChenuVid. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('generateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const prompt = document.getElementById('prompt').value;
+            const style = document.getElementById('style').value;
+            const duration = document.getElementById('duration').value;
+            
+            const resultSection = document.getElementById('resultSection');
+            const loadingState = document.getElementById('loadingState');
+            const videoContainer = document.getElementById('videoContainer');
+            const progressBar = document.getElementById('progressBar');
+            const statusText = document.getElementById('statusText');
+
+            // Show UI
+            resultSection.classList.remove('hidden');
+            loadingState.classList.remove('hidden');
+            videoContainer.classList.add('hidden');
+            
+            // Simulate progress steps
+            const steps = [
+                "Analyzing story script...",
+                "Generating character concepts...",
+                "Creating 3D environments...",
+                "Synthesizing voiceovers...",
+                "Rendering final animation..."
+            ];
+
+            let progress = 0;
+            
+            // Start the actual request
+            try {
+                // We'll use a polling or streaming approach in a real app, 
+                // but for now let's just make the request and simulate progress visually
+                // while waiting for the backend.
+                
+                const progressInterval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * 5;
+                        progressBar.style.width = Math.min(progress, 90) + '%';
+                        
+                        const stepIndex = Math.floor((progress / 100) * steps.length);
+                        if (steps[stepIndex]) {
+                            statusText.innerText = steps[stepIndex];
+                        }
+                    }
+                }, 500);
+
+                const response = await fetch('api/generate.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt, style, duration })
+                });
+
+                const data = await response.json();
+                
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                statusText.innerText = "Done!";
+
+                setTimeout(() => {
+                    loadingState.classList.add('hidden');
+                    videoContainer.classList.remove('hidden');
+                    
+                    // In a real app, this would be the generated video URL
+                    // For demo, we might return a placeholder if generation isn't real
+                    const videoElement = document.getElementById('generatedVideo');
+                    videoElement.src = data.video_url; 
+                    videoElement.play();
+                }, 500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong during generation.');
+                loadingState.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
