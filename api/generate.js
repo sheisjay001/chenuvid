@@ -29,6 +29,23 @@ export default async function handler(req, res) {
         // Simulate processing delay
         await new Promise(resolve => setTimeout(resolve, 1000));
 
+        // ---------------------------------------------------------
+        // REAL AI GENERATION (Example using OpenAI / Replicate)
+        // ---------------------------------------------------------
+        // const apiKey = process.env.OPENAI_API_KEY;
+        // if (!apiKey) {
+        //     throw new Error("Missing API Key. Please check your .env file or Vercel settings.");
+        // }
+        
+        // Example: Call an external API
+        // const response = await fetch('https://api.openai.com/v1/...', {
+        //     method: 'POST',
+        //     headers: { 'Authorization': `Bearer ${apiKey}` },
+        //     body: JSON.stringify({ prompt, style })
+        // });
+        // const data = await response.json();
+        // ---------------------------------------------------------
+
         const requestId = Math.random().toString(36).substring(7);
         const mockVideoUrl = "https://www.w3schools.com/html/mov_bbb.mp4";
 
