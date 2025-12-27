@@ -109,6 +109,11 @@
                     <p id="statusText" class="text-xs text-gray-500 mt-2">Initializing...</p>
                 </div>
 
+                <div id="errorContainer" class="hidden bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-xl mb-4 text-center">
+                    <p id="errorMessage" class="font-medium">Something went wrong.</p>
+                    <p id="errorDetails" class="text-sm opacity-75 mt-1"></p>
+                </div>
+
                 <div id="videoContainer" class="hidden">
                     <video id="generatedVideo" controls class="w-full rounded-xl shadow-lg mb-4 bg-black">
                         <!-- Source will be added via JS -->
@@ -141,6 +146,9 @@
             const resultSection = document.getElementById('resultSection');
             const loadingState = document.getElementById('loadingState');
             const videoContainer = document.getElementById('videoContainer');
+            const errorContainer = document.getElementById('errorContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorDetails = document.getElementById('errorDetails');
             const progressBar = document.getElementById('progressBar');
             const statusText = document.getElementById('statusText');
 
@@ -148,6 +156,7 @@
             resultSection.classList.remove('hidden');
             loadingState.classList.remove('hidden');
             videoContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
             
             // Simulate progress steps
             const steps = [
@@ -189,6 +198,11 @@
                 const data = await response.json();
                 
                 clearInterval(progressInterval);
+
+                if (!response.ok) {
+                    throw new Error(data.details || data.error || 'Generation failed');
+                }
+                
                 progressBar.style.width = '100%';
                 statusText.innerText = "Done!";
 
@@ -205,8 +219,10 @@
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Something went wrong during generation.');
                 loadingState.classList.add('hidden');
+                errorContainer.classList.remove('hidden');
+                errorMessage.innerText = "Generation Failed";
+                errorDetails.innerText = error.message;
             }
         });
     </script>

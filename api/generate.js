@@ -33,17 +33,18 @@ export default async function handler(req, res) {
 
         // Check if REPLICATE_API_TOKEN is present
         if (process.env.REPLICATE_API_TOKEN) {
+            console.log("Found API Token, starting generation...");
             try {
                 const replicate = new Replicate({
                     auth: process.env.REPLICATE_API_TOKEN,
                 });
 
                 // Model: Zeroscope V2 XL (Great for text-to-video)
-                // You can swap this for 'stability-ai/stable-video-diffusion' or 'lucataco/animate-diff'
                 const model = "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351";
                 
                 // Enhance prompt based on style
                 const enhancedPrompt = `${style} style. ${prompt}. High quality, detailed, 4k, smooth motion.`;
+                console.log("Generating with prompt:", enhancedPrompt);
 
                 const output = await replicate.run(
                     model,
@@ -60,14 +61,21 @@ export default async function handler(req, res) {
                     }
                 );
 
+                console.log("Replicate Output:", output);
+
                 // Replicate returns an array of output URLs (usually one video)
                 if (output && output[0]) {
                     videoUrl = output[0];
                 }
 
             } catch (replicateError) {
-                console.error("Replicate generation failed, falling back to mock:", replicateError);
-                // We don't crash, we just return the mock so the UI doesn't break
+                console.error("Replicate generation failed:", replicateError);
+                // Return the actual error to the client so they know why it failed
+                res.status(500).json({ 
+                    error: 'Video generation failed', 
+                    details: replicateError.message || 'Unknown error from AI provider' 
+                });
+                return;
             }
         } else {
             console.log("No REPLICATE_API_TOKEN found, using mock mode.");
