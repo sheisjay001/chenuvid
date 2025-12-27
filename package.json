@@ -1,0 +1,16 @@
+{
+  "name": "chenuvid",
+  "version": "1.0.0",
+  "description": "AI Cartoon Generator",
+  "main": "api/generate.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "replicate": "^0.25.2"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
